@@ -113,7 +113,7 @@
     // ======== CATALOGUE (USD UNIQUEMENT) ========
     const CATALOG = [
       // Administratif
-      { id:'CERT_TRAVAIL', name:'Certificat aptitude travail', priceUSD:450, category:'Administratif' },
+      { id:'CERT_TRAVAIL', name:'Certificat aptitude travail', priceUSD:225, category:'Administratif' },
       { id:'CERT_PPA',     name:'Certificat aptitude PPA',     priceUSD:6500, category:'Administratif' },
       // Transport
       { id:'AMBUL_LOCAL',  name:'Transport ambulance locale',  priceUSD:200, category:'Transport' },
@@ -149,7 +149,16 @@
       for(const btn of els.tabs.querySelectorAll('.tab')){
         const cat = btn.getAttribute('data-cat');
         btn.setAttribute('aria-selected', String(cat === activeCategory));
-        btn.onclick = () => { activeCategory = cat; renderList(); updateSummary(); };
+        btn.onclick = () => {
+          activeCategory = cat;
+          // Met à jour la sélection visuelle du tab actif
+          renderTabs();
+          // Rafraîchit la liste et le récap
+          renderList();
+          updateSummary();
+        };
+      }
+    };
       }
     }
 
@@ -204,7 +213,8 @@
 
     function updateSummary(){
       const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
-      els.summary.textContent = lines.length ? lines.join('\n') : '— Aucun soin sélectionné —';
+      els.summary.textContent = lines.length ? lines.join('
+') : '— Aucun soin sélectionné —';
       els.subtotal.textContent = fmt(subtotal);
       els.total.textContent = fmt(total);
       els.taxRate.disabled = !taxEnabled;
