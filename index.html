@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculatrice de soins — OMC Nord</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --panel:#111827;       /* gray-900 */
+      --panel-2:#0b1223;     /* darker */
+      --text:#e5e7eb;        /* gray-200 */
+      --muted:#9ca3af;       /* gray-400 */
+      --primary:#38bdf8;     /* sky-400 */
+      --accent:#22c55e;      /* green-500 */
+      --danger:#ef4444;      /* red-500 */
+      --border:#1f2937;      /* gray-800 */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:radial-gradient(1200px 600px at 80% -20%, #123 0%, transparent 50%),
+               radial-gradient(900px 500px at -20% 0%, #0b1a2a 0%, transparent 60%),
+               var(--bg);
+      color:var(--text); font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial;
+    }
+    .container{max-width:1100px; margin:40px auto; padding:0 20px}
+    header{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px}
+    .title{display:flex; align-items:center; gap:12px}
+    .logo{width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg, var(--primary), #60a5fa); display:grid; place-items:center; font-weight:800; color:#00111a}
+    h1{margin:0; font-size:clamp(20px, 3vw, 28px)}
+    .card{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 30px rgb(0 0 0 / .25)}
+    .grid{display:grid; grid-template-columns:1.2fr .8fr; gap:20px}
+    @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+    .section{padding:18px}
+    .toolbar{display:flex; gap:10px; flex-wrap:wrap}
+    .input{flex:1; min-width:220px; display:flex; align-items:center; gap:10px; padding:10px 12px; background:#0b1223; border:1px solid var(--border); border-radius:12px; color:var(--text)}
+    .select{padding:10px 12px; border:1px solid var(--border); background:#0b1223; color:var(--text); border-radius:12px}
+    .list{max-height:520px; overflow:auto; padding:6px}
+    .item{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:10px 12px; border:1px dashed transparent; border-radius:12px}
+    .item + .item{margin-top:8px}
+    .item:hover{background:#0c1529; border-color:#16223c}
+    .muted{color:var(--muted)}
+    .pill{font-size:12px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; color:#cbd5e1}
+    .qty{display:flex; align-items:center; gap:6px}
+    .qty input{width:56px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#0b1223; color:var(--text); text-align:center}
+    .btn{appearance:none; border:none; padding:10px 14px; border-radius:12px; background:#0e172a; color:var(--text); border:1px solid var(--border); cursor:pointer}
+    .btn:hover{filter:brightness(1.1)}
+    .btn.primary{background:linear-gradient(180deg, #0ea5e9, #0284c7); border-color:#0369a1; color:#001019}
+    .btn.success{background:linear-gradient(180deg, #22c55e, #16a34a); border-color:#166534; color:#00150a}
+    .btn.danger{background:linear-gradient(180deg, #ef4444, #b91c1c); border-color:#7f1d1d}
+
+    .totals{padding:18px; border-top:1px solid var(--border); display:grid; gap:10px}
+    .totals h2{margin:0 0 6px 0; font-size:20px}
+    .totals .row{display:flex; justify-content:space-between; align-items:center}
+    .total{font-size:28px; font-weight:800}
+
+    .summary{white-space:pre-wrap; background:#0b1223; border:1px solid var(--border); border-radius:12px; padding:12px; min-height:120px}
+    .footer{display:flex; flex-wrap:wrap; gap:10px}
+    .hint{font-size:13px; color:#93c5fd}
+
+    /* Print */
+    @media print{
+      header, .toolbar, .footer{display:none}
+      body{background:#fff; color:#000}
+      .card{border:none; box-shadow:none}
+      .summary{background:#fff; border:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title">
+        <div class="logo">OMC</div>
+        <div>
+          <h1>Calculatrice de soins — OMC Nord</h1>
+          <div class="muted">Sélectionnez les actes, ajustez les quantités, obtenez le total. Aucune donnée n’est enregistrée.</div>
+        </div>
+      </div>
+      <div class="hint">Astuce : Ctrl/Cmd + P pour imprimer un devis RP</div>
+    </header>
+
+    <div class="grid">
+      <!-- Colonne gauche : catalogue -->
+      <section class="card section">
+        <div class="toolbar">
+          <label class="input">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L15.8 15.8" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/><circle cx="11" cy="11" r="7" stroke="#9ca3af" stroke-width="2"/></svg>
+            <input id="search" type="text" placeholder="Rechercher un soin… (ex : pansement)" style="flex:1; background:transparent; border:none; color:inherit; outline:none">
+          </label>
+          <select id="category" class="select">
+            <option value="">Toutes catégories</option>
+          </select>
+          <select id="currency" class="select">
+            <option value="EUR">€ EUR</option>
+            <option value="USD">$ USD</option>
+          </select>
+        </div>
+
+        <div id="list" class="list" aria-live="polite"></div>
+      </section>
+
+      <!-- Colonne droite : récap -->
+      <section class="card section">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px">
+          <h2 style="margin:0">Récapitulatif</h2>
+          <div style="display:flex; gap:8px">
+            <button class="btn" id="reset">Réinitialiser</button>
+            <button class="btn" id="copy">Copier le récap</button>
+            <button class="btn" id="print">Imprimer</button>
+          </div>
+        </div>
+        <div id="summary" class="summary">— Aucun soin sélectionné —</div>
+
+        <div class="totals">
+          <div class="row"><span>Sous-total</span><strong id="subtotal">0 €</strong></div>
+          <div class="row muted"><span>Taxes (optionnelles)</span><span>
+            <label style="display:inline-flex; align-items:center; gap:6px">
+              <input type="checkbox" id="taxEnable"> TVA
+            </label>
+            <input type="number" id="taxRate" value="0" min="0" max="100" step="0.5" style="width:80px; margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:#0b1223; color:var(--text)"> %</span></div>
+          <div class="row"><span>Total</span><span class="total" id="total">0 €</span></div>
+        </div>
+
+        <div class="footer" style="margin-top:12px">
+          <button class="btn success" id="quick-embed">Générer résumé (Discord)</button>
+          <!--
+            NOTE : L’envoi direct à un webhook Discord depuis le navigateur est bloqué par CORS.
+            Pour "poster dans Discord", déployez un micro-proxy (Netlify/Vercel) et faites
+            fetch('https://votre-proxy/send', {method:'POST', body: JSON.stringify({content: texte})}).
+          -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ======== CATALOGUE À PERSONNALISER ========
+    const CATALOG = [
+      { id:'CONSULT',   name:'Consultation',                price:{EUR:150, USD:150}, category:'Général' },
+      { id:'PANSEMENT', name:'Pansement simple',            price:{EUR:75,  USD:75 }, category:'Soins' },
+      { id:'RADIO',     name:'Radio de contrôle',           price:{EUR:120, USD:120}, category:'Imagerie' },
+      { id:'PLATRE',    name:'Pose de plâtre',              price:{EUR:300, USD:300}, category:'Traumatologie' },
+      { id:'REMISE',    name:'Réduction luxation',          price:{EUR:220, USD:220}, category:'Traumatologie' },
+      { id:'SUTURES',   name:'Sutures / points',            price:{EUR:180, USD:180}, category:'Soins' },
+      { id:'IV',        name:'Perfusion (IV)',              price:{EUR:110, USD:110}, category:'Soins' },
+      { id:'ANTIDOL',   name:'Injection antidouleur',       price:{EUR:90,  USD:90 }, category:'Soins' },
+      { id:'CERTIF',    name:'Certificat médical',          price:{EUR:200, USD:200}, category:'Administratif' },
+      { id:'VACCIN',    name:'Vaccination',                 price:{EUR:130, USD:130}, category:'Prévention' },
+      { id:'AMBUL',     name:'Transport ambulance local',   price:{EUR:250, USD:250}, category:'Transport' },
+    ];
+
+    // ======== ÉTAT ========
+    let currency = 'EUR';
+    const state = new Map(); // id -> quantity
+
+    // ======== INIT ========
+    const els = {
+      list: document.getElementById('list'),
+      search: document.getElementById('search'),
+      category: document.getElementById('category'),
+      currency: document.getElementById('currency'),
+      summary: document.getElementById('summary'),
+      subtotal: document.getElementById('subtotal'),
+      total: document.getElementById('total'),
+      taxEnable: document.getElementById('taxEnable'),
+      taxRate: document.getElementById('taxRate'),
+      reset: document.getElementById('reset'),
+      copy: document.getElementById('copy'),
+      print: document.getElementById('print'),
+      quickEmbed: document.getElementById('quick-embed'),
+    };
+
+    // Categories
+    const categories = [...new Set(CATALOG.map(x => x.category))].sort();
+    categories.forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat; opt.textContent = cat; els.category.appendChild(opt);
+    });
+
+    // Helpers
+    const fmt = (n) => new Intl.NumberFormat('fr-FR', { style:'currency', currency }).format(n);
+
+    // Render catalogue list
+    function renderList(){
+      const q = els.search.value.trim().toLowerCase();
+      const cat = els.category.value;
+      els.list.innerHTML='';
+      CATALOG
+        .filter(x => (cat ? x.category===cat : true))
+        .filter(x => (q ? (x.name.toLowerCase().includes(q) || x.id.toLowerCase().includes(q)) : true))
+        .forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'item';
+
+          const left = document.createElement('div');
+          left.innerHTML = `<div style="font-weight:600">${item.name}</div>
+                            <div class="muted" style="font-size:13px">${item.id} · <span class="pill">${item.category}</span></div>`;
+
+          const price = document.createElement('div');
+          price.className = 'muted';
+          price.textContent = fmt(item.price[currency]);
+
+          const qty = document.createElement('div');
+          qty.className = 'qty';
+          const minus = document.createElement('button'); minus.className='btn'; minus.textContent='−';
+          const input = document.createElement('input'); input.type='number'; input.min='0'; input.step='1';
+          input.value = state.get(item.id) ?? 0;
+          const plus = document.createElement('button'); plus.className='btn'; plus.textContent='+';
+
+          minus.onclick = () => { const v=Math.max(0, (state.get(item.id)||0)-1); state.set(item.id, v); input.value=v; update(); };
+          plus.onclick  = () => { const v=(state.get(item.id)||0)+1; state.set(item.id, v); input.value=v; update(); };
+          input.oninput = () => { const v=Math.max(0, parseInt(input.value||'0',10)); state.set(item.id, v); input.value=v; update(); };
+
+          qty.append(minus, input, plus);
+          row.append(left, price, qty);
+          els.list.appendChild(row);
+        });
+    }
+
+    function compute(){
+      let lines = [];
+      let subtotal = 0;
+      for(const item of CATALOG){
+        const q = state.get(item.id)||0;
+        if(!q) continue;
+        const unit = item.price[currency];
+        const line = unit * q;
+        subtotal += line;
+        lines.push(`• ${item.name} × ${q} — ${fmt(line)} (${fmt(unit)}/u)`);
+      }
+      const taxEnabled = els.taxEnable.checked;
+      const taxRate = Math.max(0, Number(els.taxRate.value||0));
+      const taxValue = taxEnabled ? (subtotal * taxRate/100) : 0;
+      const total = subtotal + taxValue;
+      return { lines, subtotal, taxEnabled, taxRate, taxValue, total };
+    }
+
+    function update(){
+      renderList();
+      const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
+      els.summary.textContent = lines.length ? lines.join('\n') : '— Aucun soin sélectionné —';
+      els.subtotal.textContent = fmt(subtotal);
+      els.total.textContent = fmt(total);
+      els.taxRate.disabled = !taxEnabled;
+      els.taxRate.style.opacity = taxEnabled ? 1 : .6;
+    }
+
+    // Events
+    els.search.addEventListener('input', update);
+    els.category.addEventListener('change', update);
+    els.currency.addEventListener('change', (e)=>{ currency = e.target.value; update(); });
+    els.taxEnable.addEventListener('change', update);
+    els.taxRate.addEventListener('input', update);
+    els.reset.addEventListener('click', ()=>{ state.clear(); update(); });
+    els.print.addEventListener('click', ()=>window.print());
+    els.copy.addEventListener('click', async ()=>{
+      const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
+      const text = [
+        '🧮 Devis soins — OMC Nord',
+        lines.length ? lines.join('\n') : '— Aucun soin —',
+        `Sous-total: ${fmt(subtotal)}`,
+        taxEnabled ? `TVA ${taxRate}%: ${fmt(taxValue)}` : null,
+        `Total: ${fmt(total)}`,
+      ].filter(Boolean).join('\n');
+      try{ await navigator.clipboard.writeText(text); toast('Récap copié dans le presse-papiers.'); }
+      catch{ alert('Copie impossible.'); }
+    });
+
+    els.quickEmbed.addEventListener('click', ()=>{
+      const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
+      const content = [
+        '**🧮 Devis soins — OMC Nord**',
+        lines.length ? lines.join('\n') : '— Aucun soin —',
+        `Sous-total: ${fmt(subtotal)}`,
+        taxEnabled ? `TVA ${taxRate}%: ${fmt(taxValue)}` : null,
+        `Total: **${fmt(total)}**`,
+      ].filter(Boolean).join('\n');
+      // Ici on affiche juste le texte pour copier/coller dans Discord
+      const blob = new Blob([content], {type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='devis_omc.txt'; a.click(); URL.revokeObjectURL(url);
+    });
+
+    function toast(msg){
+      const t = document.createElement('div');
+      t.textContent = msg;
+      t.style.cssText = 'position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#0ea5e9; color:#001019; padding:10px 14px; border-radius:10px; box-shadow:0 10px 20px rgb(0 0 0 / .3); z-index:9999; font-weight:600';
+      document.body.appendChild(t); setTimeout(()=>{ t.remove(); }, 1800);
+    }
+
+    // Kickoff
+    renderList();
+    update();
+  </script>
+</body>
+</html>
