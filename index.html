@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Calculatrice de soins — OMC Nord</title>
+  <title>Calculatrice de soins — OMC Nord (USD)</title>
   <style>
     :root{
       --bg:#0f172a;          /* slate-900 */
@@ -56,8 +56,6 @@
     .total{font-size:28px; font-weight:800}
 
     .summary{white-space:pre-wrap; background:#0b1223; border:1px solid var(--border); border-radius:12px; padding:12px; min-height:120px}
-    .footer{display:flex; flex-wrap:wrap; gap:10px}
-    .hint{font-size:13px; color:#93c5fd}
 
     /* Print */
     @media print{
@@ -75,10 +73,10 @@
         <div class="logo">OMC</div>
         <div>
           <h1>Calculatrice de soins — OMC Nord</h1>
-          <div class="muted">Sélectionnez les actes, ajustez les quantités, obtenez le total. Aucune donnée n’est enregistrée.</div>
+          <div class="muted">Sélectionnez les actes, ajustez les quantités, obtenez le total. Aucune donnée n’est enregistrée. (USD)</div>
         </div>
       </div>
-      <div class="hint">Astuce : Ctrl/Cmd + P pour imprimer un devis RP</div>
+      <!-- hint retiré: plus d'impression -->
     </header>
 
     <div class="grid">
@@ -92,10 +90,6 @@
           <select id="category" class="select">
             <option value="">Toutes catégories</option>
           </select>
-          <select id="currency" class="select">
-            <option value="EUR">€ EUR</option>
-            <option value="USD">$ USD</option>
-          </select>
         </div>
 
         <div id="list" class="list" aria-live="polite"></div>
@@ -107,52 +101,42 @@
           <h2 style="margin:0">Récapitulatif</h2>
           <div style="display:flex; gap:8px">
             <button class="btn" id="reset">Réinitialiser</button>
-            <button class="btn" id="copy">Copier le récap</button>
-            <button class="btn" id="print">Imprimer</button>
           </div>
         </div>
         <div id="summary" class="summary">— Aucun soin sélectionné —</div>
 
         <div class="totals">
-          <div class="row"><span>Sous-total</span><strong id="subtotal">0 €</strong></div>
+          <div class="row"><span>Sous-total</span><strong id="subtotal">$0</strong></div>
           <div class="row muted"><span>Taxes (optionnelles)</span><span>
             <label style="display:inline-flex; align-items:center; gap:6px">
               <input type="checkbox" id="taxEnable"> TVA
             </label>
             <input type="number" id="taxRate" value="0" min="0" max="100" step="0.5" style="width:80px; margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:#0b1223; color:var(--text)"> %</span></div>
-          <div class="row"><span>Total</span><span class="total" id="total">0 €</span></div>
+          <div class="row"><span>Total</span><span class="total" id="total">$0</span></div>
         </div>
 
-        <div class="footer" style="margin-top:12px">
-          <button class="btn success" id="quick-embed">Générer résumé (Discord)</button>
-          <!--
-            NOTE : L’envoi direct à un webhook Discord depuis le navigateur est bloqué par CORS.
-            Pour "poster dans Discord", déployez un micro-proxy (Netlify/Vercel) et faites
-            fetch('https://votre-proxy/send', {method:'POST', body: JSON.stringify({content: texte})}).
-          -->
-        </div>
+        <!-- Footer supprimé (pas d'export Discord / copie / impression) -->
       </section>
     </div>
   </div>
 
   <script>
-    // ======== CATALOGUE À PERSONNALISER ========
+    // ======== CATALOGUE (USD UNIQUEMENT) ========
     const CATALOG = [
-      { id:'CONSULT',   name:'Consultation',                price:{EUR:150, USD:150}, category:'Général' },
-      { id:'PANSEMENT', name:'Pansement simple',            price:{EUR:75,  USD:75 }, category:'Soins' },
-      { id:'RADIO',     name:'Radio de contrôle',           price:{EUR:120, USD:120}, category:'Imagerie' },
-      { id:'PLATRE',    name:'Pose de plâtre',              price:{EUR:300, USD:300}, category:'Traumatologie' },
-      { id:'REMISE',    name:'Réduction luxation',          price:{EUR:220, USD:220}, category:'Traumatologie' },
-      { id:'SUTURES',   name:'Sutures / points',            price:{EUR:180, USD:180}, category:'Soins' },
-      { id:'IV',        name:'Perfusion (IV)',              price:{EUR:110, USD:110}, category:'Soins' },
-      { id:'ANTIDOL',   name:'Injection antidouleur',       price:{EUR:90,  USD:90 }, category:'Soins' },
-      { id:'CERTIF',    name:'Certificat médical',          price:{EUR:200, USD:200}, category:'Administratif' },
-      { id:'VACCIN',    name:'Vaccination',                 price:{EUR:130, USD:130}, category:'Prévention' },
-      { id:'AMBUL',     name:'Transport ambulance local',   price:{EUR:250, USD:250}, category:'Transport' },
+      { id:'CONSULT',   name:'Consultation',                priceUSD:150, category:'Général' },
+      { id:'PANSEMENT', name:'Pansement simple',            priceUSD:75,  category:'Soins' },
+      { id:'RADIO',     name:'Radio de contrôle',           priceUSD:120, category:'Imagerie' },
+      { id:'PLATRE',    name:'Pose de plâtre',              priceUSD:300, category:'Traumatologie' },
+      { id:'REMISE',    name:'Réduction luxation',          priceUSD:220, category:'Traumatologie' },
+      { id:'SUTURES',   name:'Sutures / points',            priceUSD:180, category:'Soins' },
+      { id:'IV',        name:'Perfusion (IV)',              priceUSD:110, category:'Soins' },
+      { id:'ANTIDOL',   name:'Injection antidouleur',       priceUSD:90,  category:'Soins' },
+      { id:'CERTIF',    name:'Certificat médical',          priceUSD:200, category:'Administratif' },
+      { id:'VACCIN',    name:'Vaccination',                 priceUSD:130, category:'Prévention' },
+      { id:'AMBUL',     name:'Transport ambulance local',   priceUSD:250, category:'Transport' },
     ];
 
     // ======== ÉTAT ========
-    let currency = 'EUR';
     const state = new Map(); // id -> quantity
 
     // ======== INIT ========
@@ -160,16 +144,12 @@
       list: document.getElementById('list'),
       search: document.getElementById('search'),
       category: document.getElementById('category'),
-      currency: document.getElementById('currency'),
       summary: document.getElementById('summary'),
       subtotal: document.getElementById('subtotal'),
       total: document.getElementById('total'),
       taxEnable: document.getElementById('taxEnable'),
       taxRate: document.getElementById('taxRate'),
       reset: document.getElementById('reset'),
-      copy: document.getElementById('copy'),
-      print: document.getElementById('print'),
-      quickEmbed: document.getElementById('quick-embed'),
     };
 
     // Categories
@@ -180,7 +160,7 @@
     });
 
     // Helpers
-    const fmt = (n) => new Intl.NumberFormat('fr-FR', { style:'currency', currency }).format(n);
+    const fmt = (n) => new Intl.NumberFormat('en-US', { style:'currency', currency: 'USD' }).format(n);
 
     // Render catalogue list
     function renderList(){
@@ -196,11 +176,11 @@
 
           const left = document.createElement('div');
           left.innerHTML = `<div style="font-weight:600">${item.name}</div>
-                            <div class="muted" style="font-size:13px">${item.id} · <span class="pill">${item.category}</span></div>`;
+                            <div class=\"muted\" style=\"font-size:13px\">${item.id} · <span class=\"pill\">${item.category}</span></div>`;
 
           const price = document.createElement('div');
           price.className = 'muted';
-          price.textContent = fmt(item.price[currency]);
+          price.textContent = fmt(item.priceUSD);
 
           const qty = document.createElement('div');
           qty.className = 'qty';
@@ -225,7 +205,7 @@
       for(const item of CATALOG){
         const q = state.get(item.id)||0;
         if(!q) continue;
-        const unit = item.price[currency];
+        const unit = item.priceUSD;
         const line = unit * q;
         subtotal += line;
         lines.push(`• ${item.name} × ${q} — ${fmt(line)} (${fmt(unit)}/u)`);
@@ -250,45 +230,9 @@
     // Events
     els.search.addEventListener('input', update);
     els.category.addEventListener('change', update);
-    els.currency.addEventListener('change', (e)=>{ currency = e.target.value; update(); });
     els.taxEnable.addEventListener('change', update);
     els.taxRate.addEventListener('input', update);
     els.reset.addEventListener('click', ()=>{ state.clear(); update(); });
-    els.print.addEventListener('click', ()=>window.print());
-    els.copy.addEventListener('click', async ()=>{
-      const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
-      const text = [
-        '🧮 Devis soins — OMC Nord',
-        lines.length ? lines.join('\n') : '— Aucun soin —',
-        `Sous-total: ${fmt(subtotal)}`,
-        taxEnabled ? `TVA ${taxRate}%: ${fmt(taxValue)}` : null,
-        `Total: ${fmt(total)}`,
-      ].filter(Boolean).join('\n');
-      try{ await navigator.clipboard.writeText(text); toast('Récap copié dans le presse-papiers.'); }
-      catch{ alert('Copie impossible.'); }
-    });
-
-    els.quickEmbed.addEventListener('click', ()=>{
-      const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
-      const content = [
-        '**🧮 Devis soins — OMC Nord**',
-        lines.length ? lines.join('\n') : '— Aucun soin —',
-        `Sous-total: ${fmt(subtotal)}`,
-        taxEnabled ? `TVA ${taxRate}%: ${fmt(taxValue)}` : null,
-        `Total: **${fmt(total)}**`,
-      ].filter(Boolean).join('\n');
-      // Ici on affiche juste le texte pour copier/coller dans Discord
-      const blob = new Blob([content], {type:'text/plain'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='devis_omc.txt'; a.click(); URL.revokeObjectURL(url);
-    });
-
-    function toast(msg){
-      const t = document.createElement('div');
-      t.textContent = msg;
-      t.style.cssText = 'position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#0ea5e9; color:#001019; padding:10px 14px; border-radius:10px; box-shadow:0 10px 20px rgb(0 0 0 / .3); z-index:9999; font-weight:600';
-      document.body.appendChild(t); setTimeout(()=>{ t.remove(); }, 1800);
-    }
 
     // Kickoff
     renderList();
