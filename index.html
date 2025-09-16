@@ -158,8 +158,6 @@
           updateSummary();
         };
       }
-    };
-      }
     }
 
     function renderList(){
@@ -170,7 +168,7 @@
 
         const left = document.createElement('div');
         left.innerHTML = `<div style="font-weight:600">${item.name}</div>
-                          <div class=\"muted\" style=\"font-size:13px\">${item.id} · <span class=\"pill\">${item.category}</span></div>`;
+                          <div class="muted" style="font-size:13px">${item.id} · <span class="pill">${item.category}</span></div>`;
 
         const price = document.createElement('div');
         price.className = 'muted';
@@ -213,8 +211,7 @@
 
     function updateSummary(){
       const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
-      els.summary.textContent = lines.length ? lines.join('
-') : '— Aucun soin sélectionné —';
+      els.summary.textContent = lines.length ? lines.join('\n') : '— Aucun soin sélectionné —';
       els.subtotal.textContent = fmt(subtotal);
       els.total.textContent = fmt(total);
       els.taxRate.disabled = !taxEnabled;
