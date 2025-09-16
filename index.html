@@ -53,7 +53,7 @@
     .pill{font-size:12px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; color:#cbd5e1}
 
     .qty{display:flex; align-items:center; gap:6px}
-    .qty input{width:56px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#0b1223; color:var(--text); text-align:center}
+    .qty input{width:56px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#0b1223; color:#var(--text); text-align:center}
     .btn{appearance:none; border:none; padding:10px 14px; border-radius:12px; background:#0e172a; color:var(--text); border:1px solid var(--border); cursor:pointer}
     .btn:hover{filter:brightness(1.1)}
 
@@ -82,7 +82,7 @@
     <div class="grid">
       <!-- Colonne gauche : catalogue -->
       <section class="card section">
-        <!-- Onglets déplacés ici, centrés au-dessus de la liste -->
+        <!-- Onglets centrés au-dessus de la liste -->
         <div class="tabs" id="tabs" role="tablist" aria-label="Catégories de soins">
           <button class="tab" role="tab" aria-selected="true" data-cat="Administratif" title="Administratif">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -186,17 +186,6 @@
         btn.setAttribute('aria-selected', String(btn.dataset.cat === activeCategory));
       }
     }
-    // Délégation d'événements sur le conteneur d'onglets (plus robuste)
-    els.tabs.addEventListener('click', (e) => {
-      const btn = e.target.closest('.tab');
-      if (!btn) return;
-      activeCategory = btn.dataset.cat;
-      syncTabs();
-      renderList();
-      updateSummary();
-    });;
-      }
-    }
 
     function renderList(){
       els.list.innerHTML='';
@@ -249,23 +238,51 @@
 
     function updateSummary(){
       const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
-      els.summary.textContent = lines.length ? lines.join('
-') : '— Aucun soin sélectionné —';
+      els.summary.textContent = lines.length ? lines.join('\n') : '— Aucun soin sélectionné —';
       els.subtotal.textContent = fmt(subtotal);
       els.total.textContent = fmt(total);
       els.taxRate.disabled = !taxEnabled;
       els.taxRate.style.opacity = taxEnabled ? 1 : .6;
     }
 
-    // Events
+    // === Événements ===
+    // Tabs: délégation d'événements pour capter clics sur icônes/labels
+    els.tabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tab');
+      if (!btn) return;
+      activeCategory = btn.dataset.cat;
+      syncTabs();
+      renderList();
+      updateSummary();
+    });
+
     els.taxEnable.addEventListener('change', updateSummary);
     els.taxRate.addEventListener('input', updateSummary);
     els.reset.addEventListener('click', ()=>{ state.clear(); updateSummary(); renderList(); });
 
-    // Kickoff
+    // === Kickoff ===
     syncTabs();
     renderList();
     updateSummary();
+
+    // --- Self-tests (console) ---
+    (function selfTest(){
+      try{
+        console.log('[OMC] Catégorie active au chargement:', activeCategory);
+        const leftCount = CATALOG.filter(x=>x.category===activeCategory).length;
+        if(leftCount===0){ console.warn('[OMC][TEST] Aucune entrée trouvée pour', activeCategory); }
+        // Simule un switch de tab pour s'assurer que l'écouteur marche
+        const transportBtn = Array.from(els.tabs.querySelectorAll('.tab')).find(b=>b.dataset.cat==='Transport');
+        if(transportBtn){
+          transportBtn.dispatchEvent(new Event('click', {bubbles:true}));
+          // Revenir à la catégorie par défaut
+          const adminBtn = Array.from(els.tabs.querySelectorAll('.tab')).find(b=>b.dataset.cat==='Administratif');
+          if(adminBtn){ adminBtn.dispatchEvent(new Event('click', {bubbles:true})); }
+        }
+      }catch(err){
+        console.error('[OMC][TEST] Échec self-test:', err);
+      }
+    })();
   </script>
 </body>
 </html>
