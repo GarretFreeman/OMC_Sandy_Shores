@@ -25,45 +25,40 @@
       color:var(--text); font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial;
     }
     .container{max-width:1100px; margin:40px auto; padding:0 20px}
-    header{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px}
+    header{display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:10px}
     .title{display:flex; align-items:center; gap:12px}
     .logo{width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg, var(--primary), #60a5fa); display:grid; place-items:center; font-weight:800; color:#00111a}
     h1{margin:0; font-size:clamp(20px, 3vw, 28px)}
+    .muted{color:var(--muted)}
+
     .card{background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 30px rgb(0 0 0 / .25)}
     .grid{display:grid; grid-template-columns:1.2fr .8fr; gap:20px}
     @media (max-width:900px){ .grid{grid-template-columns:1fr} }
     .section{padding:18px}
-    .toolbar{display:flex; gap:10px; flex-wrap:wrap}
-    .input{flex:1; min-width:220px; display:flex; align-items:center; gap:10px; padding:10px 12px; background:#0b1223; border:1px solid var(--border); border-radius:12px; color:var(--text)}
-    .select{padding:10px 12px; border:1px solid var(--border); background:#0b1223; color:var(--text); border-radius:12px}
+
+    /* Tabs */
+    .tabs{display:flex; gap:10px; flex-wrap:wrap; margin:14px 0 20px}
+    .tab{appearance:none; border:1px solid var(--border); background:#0b1223; color:var(--text); padding:10px 14px; border-radius:999px; cursor:pointer}
+    .tab[aria-selected="true"]{background:linear-gradient(180deg, #0ea5e9, #0284c7); color:#001019; border-color:#0369a1; font-weight:700}
+
     .list{max-height:520px; overflow:auto; padding:6px}
     .item{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:12px; padding:10px 12px; border:1px dashed transparent; border-radius:12px}
     .item + .item{margin-top:8px}
     .item:hover{background:#0c1529; border-color:#16223c}
-    .muted{color:var(--muted)}
     .pill{font-size:12px; padding:4px 8px; border:1px solid var(--border); border-radius:999px; color:#cbd5e1}
+
     .qty{display:flex; align-items:center; gap:6px}
     .qty input{width:56px; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:#0b1223; color:var(--text); text-align:center}
     .btn{appearance:none; border:none; padding:10px 14px; border-radius:12px; background:#0e172a; color:var(--text); border:1px solid var(--border); cursor:pointer}
     .btn:hover{filter:brightness(1.1)}
-    .btn.primary{background:linear-gradient(180deg, #0ea5e9, #0284c7); border-color:#0369a1; color:#001019}
-    .btn.success{background:linear-gradient(180deg, #22c55e, #16a34a); border-color:#166534; color:#00150a}
-    .btn.danger{background:linear-gradient(180deg, #ef4444, #b91c1c); border-color:#7f1d1d}
 
     .totals{padding:18px; border-top:1px solid var(--border); display:grid; gap:10px}
-    .totals h2{margin:0 0 6px 0; font-size:20px}
     .totals .row{display:flex; justify-content:space-between; align-items:center}
     .total{font-size:28px; font-weight:800}
 
     .summary{white-space:pre-wrap; background:#0b1223; border:1px solid var(--border); border-radius:12px; padding:12px; min-height:120px}
 
-    /* Print */
-    @media print{
-      header, .toolbar, .footer{display:none}
-      body{background:#fff; color:#000}
-      .card{border:none; box-shadow:none}
-      .summary{background:#fff; border:none}
-    }
+    @media print{ header, .tabs{display:none} body{background:#fff; color:#000} .card{border:none; box-shadow:none} .summary{background:#fff; border:none} }
   </style>
 </head>
 <body>
@@ -73,25 +68,21 @@
         <div class="logo">OMC</div>
         <div>
           <h1>Calculatrice de soins — OMC Nord</h1>
-          <div class="muted">Sélectionnez les actes, ajustez les quantités, obtenez le total. Aucune donnée n’est enregistrée. (USD)</div>
+          <div class="muted">Sélectionnez les actes par catégorie, ajustez les quantités, obtenez le total. Aucune donnée n’est enregistrée. (USD)</div>
         </div>
       </div>
-      <!-- hint retiré: plus d'impression -->
     </header>
+
+    <div class="tabs" id="tabs" role="tablist" aria-label="Catégories de soins">
+      <button class="tab" role="tab" aria-selected="true" data-cat="Administratif">Administratif</button>
+      <button class="tab" role="tab" aria-selected="false" data-cat="Transport">Transport</button>
+      <button class="tab" role="tab" aria-selected="false" data-cat="Soins Hôpital">Soins Hôpital</button>
+      <button class="tab" role="tab" aria-selected="false" data-cat="Soins sur site">Soins sur site</button>
+    </div>
 
     <div class="grid">
       <!-- Colonne gauche : catalogue -->
       <section class="card section">
-        <div class="toolbar">
-          <label class="input">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21L15.8 15.8" stroke="#9ca3af" stroke-width="2" stroke-linecap="round"/><circle cx="11" cy="11" r="7" stroke="#9ca3af" stroke-width="2"/></svg>
-            <input id="search" type="text" placeholder="Rechercher un soin… (ex : pansement)" style="flex:1; background:transparent; border:none; color:inherit; outline:none">
-          </label>
-          <select id="category" class="select">
-            <option value="">Toutes catégories</option>
-          </select>
-        </div>
-
         <div id="list" class="list" aria-live="polite"></div>
       </section>
 
@@ -111,11 +102,9 @@
             <label style="display:inline-flex; align-items:center; gap:6px">
               <input type="checkbox" id="taxEnable"> TVA
             </label>
-            <input type="number" id="taxRate" value="0" min="0" max="100" step="0.5" style="width:80px; margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:#0b1223; color:var(--text)"> %</span></div>
+            <input type="number" id="taxRate" value="0" min="0" max="100" step="0.5" style="width:80px; margin-left:8px; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:#0b1223; color:#fff"> %</span></div>
           <div class="row"><span>Total</span><span class="total" id="total">$0</span></div>
         </div>
-
-        <!-- Footer supprimé (pas d'export Discord / copie / impression) -->
       </section>
     </div>
   </div>
@@ -123,27 +112,29 @@
   <script>
     // ======== CATALOGUE (USD UNIQUEMENT) ========
     const CATALOG = [
-      { id:'CONSULT',   name:'Consultation',                priceUSD:150, category:'Général' },
-      { id:'PANSEMENT', name:'Pansement simple',            priceUSD:75,  category:'Soins' },
-      { id:'RADIO',     name:'Radio de contrôle',           priceUSD:120, category:'Imagerie' },
-      { id:'PLATRE',    name:'Pose de plâtre',              priceUSD:300, category:'Traumatologie' },
-      { id:'REMISE',    name:'Réduction luxation',          priceUSD:220, category:'Traumatologie' },
-      { id:'SUTURES',   name:'Sutures / points',            priceUSD:180, category:'Soins' },
-      { id:'IV',        name:'Perfusion (IV)',              priceUSD:110, category:'Soins' },
-      { id:'ANTIDOL',   name:'Injection antidouleur',       priceUSD:90,  category:'Soins' },
-      { id:'CERTIF',    name:'Certificat médical',          priceUSD:200, category:'Administratif' },
-      { id:'VACCIN',    name:'Vaccination',                 priceUSD:130, category:'Prévention' },
-      { id:'AMBUL',     name:'Transport ambulance local',   priceUSD:250, category:'Transport' },
+      // Administratif
+      { id:'CERT_TRAVAIL', name:'Certificat aptitude travail', priceUSD:450, category:'Administratif' },
+      { id:'CERT_PPA',     name:'Certificat aptitude PPA',     priceUSD:6500, category:'Administratif' },
+      // Transport
+      { id:'AMBUL_LOCAL',  name:'Transport ambulance locale',  priceUSD:200, category:'Transport' },
+      // Soins Hôpital
+      { id:'HOP_SOIN',     name:'Soins',                       priceUSD:450, category:'Soins Hôpital' },
+      { id:'HOP_REA',      name:'Réanimation',                 priceUSD:800, category:'Soins Hôpital' },
+      { id:'HOP_RADIO',    name:'Radio de contrôle',           priceUSD:480, category:'Soins Hôpital' },
+      { id:'HOP_SUTURE',   name:'Points de suture',            priceUSD:500, category:'Soins Hôpital' },
+      // Soins sur site
+      { id:'SITE_SOIN',    name:'Soins',                       priceUSD:800, category:'Soins sur site' },
+      { id:'SITE_REA',     name:'Réanimation',                 priceUSD:450, category:'Soins sur site' },
     ];
 
     // ======== ÉTAT ========
     const state = new Map(); // id -> quantity
+    let activeCategory = 'Administratif';
 
     // ======== INIT ========
     const els = {
       list: document.getElementById('list'),
-      search: document.getElementById('search'),
-      category: document.getElementById('category'),
+      tabs: document.getElementById('tabs'),
       summary: document.getElementById('summary'),
       subtotal: document.getElementById('subtotal'),
       total: document.getElementById('total'),
@@ -152,51 +143,45 @@
       reset: document.getElementById('reset'),
     };
 
-    // Categories
-    const categories = [...new Set(CATALOG.map(x => x.category))].sort();
-    categories.forEach(cat => {
-      const opt = document.createElement('option');
-      opt.value = cat; opt.textContent = cat; els.category.appendChild(opt);
-    });
-
-    // Helpers
     const fmt = (n) => new Intl.NumberFormat('en-US', { style:'currency', currency: 'USD' }).format(n);
 
-    // Render catalogue list
+    function renderTabs(){
+      for(const btn of els.tabs.querySelectorAll('.tab')){
+        const cat = btn.getAttribute('data-cat');
+        btn.setAttribute('aria-selected', String(cat === activeCategory));
+        btn.onclick = () => { activeCategory = cat; renderList(); updateSummary(); };
+      }
+    }
+
     function renderList(){
-      const q = els.search.value.trim().toLowerCase();
-      const cat = els.category.value;
       els.list.innerHTML='';
-      CATALOG
-        .filter(x => (cat ? x.category===cat : true))
-        .filter(x => (q ? (x.name.toLowerCase().includes(q) || x.id.toLowerCase().includes(q)) : true))
-        .forEach(item => {
-          const row = document.createElement('div');
-          row.className = 'item';
+      CATALOG.filter(x => x.category === activeCategory).forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'item';
 
-          const left = document.createElement('div');
-          left.innerHTML = `<div style="font-weight:600">${item.name}</div>
-                            <div class=\"muted\" style=\"font-size:13px\">${item.id} · <span class=\"pill\">${item.category}</span></div>`;
+        const left = document.createElement('div');
+        left.innerHTML = `<div style="font-weight:600">${item.name}</div>
+                          <div class=\"muted\" style=\"font-size:13px\">${item.id} · <span class=\"pill\">${item.category}</span></div>`;
 
-          const price = document.createElement('div');
-          price.className = 'muted';
-          price.textContent = fmt(item.priceUSD);
+        const price = document.createElement('div');
+        price.className = 'muted';
+        price.textContent = fmt(item.priceUSD);
 
-          const qty = document.createElement('div');
-          qty.className = 'qty';
-          const minus = document.createElement('button'); minus.className='btn'; minus.textContent='−';
-          const input = document.createElement('input'); input.type='number'; input.min='0'; input.step='1';
-          input.value = state.get(item.id) ?? 0;
-          const plus = document.createElement('button'); plus.className='btn'; plus.textContent='+';
+        const qty = document.createElement('div');
+        qty.className = 'qty';
+        const minus = document.createElement('button'); minus.className='btn'; minus.textContent='−';
+        const input = document.createElement('input'); input.type='number'; input.min='0'; input.step='1';
+        input.value = state.get(item.id) ?? 0;
+        const plus = document.createElement('button'); plus.className='btn'; plus.textContent='+';
 
-          minus.onclick = () => { const v=Math.max(0, (state.get(item.id)||0)-1); state.set(item.id, v); input.value=v; update(); };
-          plus.onclick  = () => { const v=(state.get(item.id)||0)+1; state.set(item.id, v); input.value=v; update(); };
-          input.oninput = () => { const v=Math.max(0, parseInt(input.value||'0',10)); state.set(item.id, v); input.value=v; update(); };
+        minus.onclick = () => { const v=Math.max(0, (state.get(item.id)||0)-1); state.set(item.id, v); input.value=v; updateSummary(); };
+        plus.onclick  = () => { const v=(state.get(item.id)||0)+1; state.set(item.id, v); input.value=v; updateSummary(); };
+        input.oninput = () => { const v=Math.max(0, parseInt(input.value||'0',10)); state.set(item.id, v); input.value=v; updateSummary(); };
 
-          qty.append(minus, input, plus);
-          row.append(left, price, qty);
-          els.list.appendChild(row);
-        });
+        qty.append(minus, input, plus);
+        row.append(left, price, qty);
+        els.list.appendChild(row);
+      });
     }
 
     function compute(){
@@ -217,8 +202,7 @@
       return { lines, subtotal, taxEnabled, taxRate, taxValue, total };
     }
 
-    function update(){
-      renderList();
+    function updateSummary(){
       const {lines, subtotal, taxEnabled, taxRate, taxValue, total} = compute();
       els.summary.textContent = lines.length ? lines.join('\n') : '— Aucun soin sélectionné —';
       els.subtotal.textContent = fmt(subtotal);
@@ -228,15 +212,14 @@
     }
 
     // Events
-    els.search.addEventListener('input', update);
-    els.category.addEventListener('change', update);
-    els.taxEnable.addEventListener('change', update);
-    els.taxRate.addEventListener('input', update);
-    els.reset.addEventListener('click', ()=>{ state.clear(); update(); });
+    els.taxEnable.addEventListener('change', updateSummary);
+    els.taxRate.addEventListener('input', updateSummary);
+    els.reset.addEventListener('click', ()=>{ state.clear(); updateSummary(); renderList(); });
 
     // Kickoff
+    renderTabs();
     renderList();
-    update();
+    updateSummary();
   </script>
 </body>
 </html>
